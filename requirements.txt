@@ -1,0 +1,10 @@
+opentelemetry-api>=1.24
+opentelemetry-sdk>=1.24
+
+# Needed only for --exporter otlp / --exporter both. Harmless to install either
+# way; endpoint and credentials come from OTEL_EXPORTER_OTLP_* environment
+# variables, never from this repository.
+opentelemetry-exporter-otlp-proto-http>=1.24
+
+# Development
+pytest>=7.4

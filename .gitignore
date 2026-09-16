@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Exported telemetry and local collector state
+traces/
+*.jsonl
+*.log
+
+# Collector credentials belong in the environment, never in a file here
+.env
+.env.*
