@@ -29,6 +29,7 @@ from opentelemetry.sdk.trace.export import (
     SimpleSpanProcessor,
 )
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 
 SERVICE_NAME = "travel-advisor"
 
@@ -45,11 +46,19 @@ APP_PATH = "advisor.path"
 APP_COST_USD = "advisor.cost_usd"
 APP_TOOL = "advisor.tool.name"
 APP_TOOL_ARGS = "advisor.tool.arguments"
+APP_TOOL_RESULT_CHARS = "advisor.tool.result_characters"
 APP_CHUNKS = "advisor.retrieval.chunk_ids"
 APP_TOP_SCORE = "advisor.retrieval.top_score"
 APP_MEAN_SCORE = "advisor.retrieval.mean_score"
+APP_TOP_K = "advisor.retrieval.top_k"
+APP_CORPUS_SIZE = "advisor.retrieval.corpus_size"
+APP_CONTEXT_CHUNKS = "advisor.context.chunks"
 APP_CONTEXT_CHARS = "advisor.context.characters"
 APP_ITERATION = "advisor.agent.iteration"
+APP_MAX_ITERATIONS = "advisor.agent.max_iterations"
+APP_CITIES = "advisor.agent.cities"
+APP_ITERATIONS_USED = "advisor.agent.iterations_used"
+APP_DISTINCT_CALLS = "advisor.agent.distinct_calls"
 
 
 @dataclass
@@ -86,7 +95,9 @@ def configure(exporter: str = "memory", service_name: str = SERVICE_NAME) -> Tel
             "deployment.environment": os.environ.get("APP_ENV", "local"),
         }
     )
-    provider = TracerProvider(resource=resource)
+    # Pin sampling so OTEL_TRACES_SAMPLER cannot silently drop demo spans.
+    # OTEL_SDK_DISABLED still disables tracing; collector sampling is separate.
+    provider = TracerProvider(resource=resource, sampler=ALWAYS_ON)
 
     memory_exporter: Optional[InMemorySpanExporter] = None
     if exporter == "memory":

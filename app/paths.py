@@ -20,7 +20,14 @@ from opentelemetry.trace import Status, StatusCode
 
 from .llm import chat
 from .retrieval import VectorStore, build_context, retrieve
-from .telemetry import APP_ITERATION, APP_PATH
+from .telemetry import (
+    APP_CITIES,
+    APP_DISTINCT_CALLS,
+    APP_ITERATION,
+    APP_ITERATIONS_USED,
+    APP_MAX_ITERATIONS,
+    APP_PATH,
+)
 from .tools import call_tool
 
 CITIES = ("kyoto", "lisbon", "reykjavik")
@@ -87,8 +94,8 @@ def agentic(
 
     with tracer.start_as_current_span("advisor.agentic") as span:
         span.set_attribute(APP_PATH, "agentic")
-        span.set_attribute("advisor.agent.max_iterations", max_iterations)
-        span.set_attribute("advisor.agent.cities", list(cities))
+        span.set_attribute(APP_MAX_ITERATIONS, max_iterations)
+        span.set_attribute(APP_CITIES, list(cities))
 
         observations: List[str] = []
         performed: List[str] = []
@@ -110,8 +117,8 @@ def agentic(
         prompt = "Question: {}\nObservations:\n{}".format(question, "\n".join(observations))
         text = chat(tracer, prompt, attributes={APP_PATH: "agentic"})
 
-        span.set_attribute("advisor.agent.iterations_used", len(performed))
-        span.set_attribute("advisor.agent.distinct_calls", len(done))
+        span.set_attribute(APP_ITERATIONS_USED, len(performed))
+        span.set_attribute(APP_DISTINCT_CALLS, len(done))
         span.set_status(Status(StatusCode.OK))
         return Answer(path="agentic", question=question, text=text, tool_calls=performed)
 

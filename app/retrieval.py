@@ -15,7 +15,15 @@ from typing import List, Sequence, Tuple
 from opentelemetry.trace import Status, StatusCode
 
 from .llm import embed, hashed_embedding
-from .telemetry import APP_CHUNKS, APP_MEAN_SCORE, APP_TOP_SCORE
+from .telemetry import (
+    APP_CHUNKS,
+    APP_CONTEXT_CHARS,
+    APP_CONTEXT_CHUNKS,
+    APP_CORPUS_SIZE,
+    APP_MEAN_SCORE,
+    APP_TOP_K,
+    APP_TOP_SCORE,
+)
 
 CORPUS = {
     "kyoto-01": "Kyoto is busiest during cherry blossom season in early April and during autumn foliage in November.",
@@ -61,8 +69,8 @@ def retrieve(tracer, store: VectorStore, question: str, top_k: int = 3) -> List[
     """Embed the question and search, as a parent span over the embedding span."""
 
     with tracer.start_as_current_span("retrieve") as span:
-        span.set_attribute("advisor.retrieval.top_k", top_k)
-        span.set_attribute("advisor.retrieval.corpus_size", len(store.ids))
+        span.set_attribute(APP_TOP_K, top_k)
+        span.set_attribute(APP_CORPUS_SIZE, len(store.ids))
 
         query_vector = embed(tracer, question)
 
@@ -91,6 +99,6 @@ def build_context(tracer, chunks: Sequence[Chunk]) -> str:
 
     with tracer.start_as_current_span("assemble_context") as span:
         context = "\n".join("[{}] {}".format(c.chunk_id, c.text) for c in chunks)
-        span.set_attribute("advisor.context.chunks", len(chunks))
-        span.set_attribute("advisor.context.characters", len(context))
+        span.set_attribute(APP_CONTEXT_CHUNKS, len(chunks))
+        span.set_attribute(APP_CONTEXT_CHARS, len(context))
         return context

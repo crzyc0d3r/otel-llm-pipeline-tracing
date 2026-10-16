@@ -30,15 +30,15 @@ slow" becomes "the agent ran `lookup_weather(city=kyoto)` six times".
 ## What the trace looks like
 
 ```
-advisor.rag                             142.3 ms
+advisor.rag                              29.4 ms
   retrieve                               11.7 ms   mean score 0.412
-    embeddings advisor-embed-small        4.6 ms   11+0 tok
+    embeddings advisor-embed-small        4.6 ms   15+0 tok
     vector_search                         3.4 ms   mean score 0.412
   assemble_context                        0.1 ms
-  chat advisor-chat-mini                 12.9 ms   96+22 tok
+  chat advisor-chat-mini                 12.9 ms   102+22 tok
 ```
 
-Durations vary run to run; the structure does not. The same request through `advisor.basic`
+Durations and scores vary with the question; the structure does not. The same request through `advisor.basic`
 is two spans, and through `advisor.agentic` it is however many the agent decided on.
 
 ## The demo worth running

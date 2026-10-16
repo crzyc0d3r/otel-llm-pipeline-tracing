@@ -124,6 +124,23 @@ def test_forgetting_costs_work_without_gathering_anything_new(telemetry, tracer)
     assert buggy_summary.input_tokens > fixed_summary.input_tokens
 
 
+def test_model_failures_are_recorded_on_the_span(telemetry, tracer):
+    """A provider error has to land on the chat span, not just in a log line."""
+
+    from app.llm import chat
+
+    with pytest.raises(RuntimeError):
+        with tracer.start_as_current_span("advisor.basic"):
+            chat(tracer, QUESTION, fail=True)
+
+    spans = telemetry.finished_spans()
+    chat_span = next(s for s in spans if attribute(s, GEN_AI_OPERATION) == "chat")
+    assert chat_span.status.status_code.name == "ERROR"
+    assert "503" in (chat_span.status.description or "")
+    # The failed call still reports what it consumed.
+    assert attribute(chat_span, "gen_ai.usage.input_tokens") > 0
+
+
 def test_tool_errors_are_recorded_not_swallowed(telemetry, tracer):
     from app.tools import call_tool
 

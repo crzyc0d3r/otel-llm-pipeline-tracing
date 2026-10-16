@@ -13,7 +13,7 @@ from typing import Callable, Dict
 
 from opentelemetry.trace import Status, StatusCode
 
-from .telemetry import APP_TOOL, APP_TOOL_ARGS
+from .telemetry import APP_TOOL, APP_TOOL_ARGS, APP_TOOL_RESULT_CHARS
 
 _WEATHER = {
     "kyoto": "18C, light rain, humid",
@@ -81,6 +81,6 @@ def call_tool(tracer, name: str, city: str) -> str:
             span.record_exception(exc)
             span.set_status(Status(StatusCode.ERROR, str(exc)))
             raise
-        span.set_attribute("advisor.tool.result_characters", len(result))
+        span.set_attribute(APP_TOOL_RESULT_CHARS, len(result))
         span.set_status(Status(StatusCode.OK))
         return result

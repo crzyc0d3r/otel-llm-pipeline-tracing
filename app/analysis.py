@@ -180,7 +180,7 @@ def find_problems(spans: Sequence[object]) -> List[str]:
     findings: List[str] = []
 
     repeats = Counter(
-        (attribute(s, APP_TOOL), attribute(s, APP_TOOL_ARGS))
+        (str(attribute(s, APP_TOOL)), str(attribute(s, APP_TOOL_ARGS, "")))
         for s in spans
         if attribute(s, APP_TOOL)
     )
@@ -192,12 +192,19 @@ def find_problems(spans: Sequence[object]) -> List[str]:
                 )
             )
 
-    for span in spans:
-        mean_score = attribute(span, APP_MEAN_SCORE)
-        if mean_score is not None and float(mean_score) < LOW_RELEVANCE:
+    # The score is recorded on the search span and repeated on its parent, so
+    # collect the worst one and report it once rather than once per span.
+    scored = [
+        (float(attribute(span, APP_MEAN_SCORE)), span)
+        for span in spans
+        if attribute(span, APP_MEAN_SCORE) is not None
+    ]
+    if scored:
+        worst_score, worst_span = min(scored, key=lambda pair: pair[0])
+        if worst_score < LOW_RELEVANCE:
             findings.append(
                 "weak retrieval: '{}' returned a mean relevance of {:.3f}; "
-                "the answer is probably ungrounded".format(span.name, float(mean_score))
+                "the answer is probably ungrounded".format(worst_span.name, worst_score)
             )
 
     for span in spans:
